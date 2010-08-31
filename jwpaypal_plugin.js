@@ -61,13 +61,23 @@
 				<small>specify product extra info</small></td>\
 			</tr>\
 			<tr>\
-				<th><label for="jwpaypal-weight">Shipping Address Required</label></th>\
+				<th><label for="jwpaypal-shipadd">Shipping Address Required</label></th>\
 				<td><select name="shipadd" id="jwpaypal-shipadd">\
 				<option value="0">prompt for an address, but do not require one</option>\
 				<option value="1">do not prompt for an address</option>\
 				<option value="2">prompt for an address, and require one</option>\
 				</select>\
 				</td>\
+			</tr>\
+			<tr>\
+				<th><label for="jwpaypal-shipcost">Shipping Cost</label></th>\
+				<td><input type="text" name="shipcost" id="jwpaypal-shipcost" value="" /><br />\
+				<small>the cost of shipping this item.</small></td>\
+			</tr>\
+			<tr>\
+				<th><label for="jwpaypal-shipcost2">Additional Shipping Cost</label></th>\
+				<td><input type="text" name="shipcost2" id="jwpaypal-shipcost2" value="" /><br />\
+				<small>the cost of shipping each additional unit of this item.</small></td>\
 			</tr>\
 			<tr>\
 				<th><label for="jwpaypal-weight">Weight in Pounds</label></th>\
@@ -95,6 +105,8 @@
 				'sku'       : '',
 				'extra'    : '',
 				'shipadd'	: '',
+				'shipcost'	: '',
+				'shipcost2'	: '',								
 				'weight'	: ''
 			};
 			var shortcode = '[paypal';

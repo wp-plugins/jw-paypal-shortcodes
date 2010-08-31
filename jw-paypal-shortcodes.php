@@ -87,6 +87,12 @@ class JWPaypal
 			if($atts['weight'] != '') {
 				$code.= '<input type="hidden" name="weight" value="'.$atts['weight'].'">';
 			}
+			if($atts['shipcost'] != '') {
+				$code.= '<input type="hidden" name="shipping" value="'.$atts['shipcost'].'">';
+			}
+			if($atts['shipcost2'] != '') {
+				$code.= '<input type="hidden" name="shipping2" value="'.$atts['shipcost2'].'">';
+			}
 			if($atts['extra'] != '') {
 				$code.='<table><tr>';
 				$code.='<td><input type="hidden" name="on0" value="'.$atts['extra'].'">'.$atts['extra'].':</td><td><input type="text" name="os0" maxlength="60"></td>';
