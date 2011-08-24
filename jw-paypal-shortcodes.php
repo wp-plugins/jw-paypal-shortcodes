@@ -1,10 +1,10 @@
 <?php
 /*
 Plugin Name: JW Paypal Shortcodes
-Plugin URI: http://jacksonwhelan.com/2010/07/paypal-shortcodes-plugin/
+Plugin URI: http://wordpress.org/extend/plugins/jw-paypal-shortcodes/
 Description: Shortcodes + PayPal Website Payments Standard - Add to Cart Buttons
 Author: Jackson Whelan
-Version: 0.2
+Version: 0.3
 Author URI: http://jacksonwhelan.com
 */
 
@@ -43,17 +43,46 @@ class JWPaypal
 	
 	function jw_pp_register_settings() {
 		register_setting('jw-pp-settings-group', 'jw-pp-email');
+		register_setting('jw-pp-settings-group', 'jw-pp-curr');
+		register_setting('jw-pp-settings-group', 'jw-pp-lc');
+		register_setting('jw-pp-settings-group', 'jw-pp-acimg');
+		register_setting('jw-pp-settings-group', 'jw-pp-coimg');
 	}
 
 	function jw_pp_settings_page() { ?>
 		<div class="wrap">
 			<h2>PayPal Shortcodes Settings</h2>
+			<?php if($_GET['settings-updated'] == true) { ?>
+			<div class="update"><p><strong>Settings Updated</strong></p></div>
+			<?php } if( !get_option('jw-pp-email') ) { ?>
+			<p><strong>WARNING: Plugin will not function properly without your merchant email address.</strong></p>
+			<?php } ?>
 			<form method="post" action="options.php">
 			    <?php settings_fields('jw-pp-settings-group'); ?>
 			    <table class="form-table">
 			        <tr valign="top">
-			        <th scope="row">PayPal Email</th>
+			        <th scope="row">PayPal Merchant Email</th>
 			        <td><input type="text" name="jw-pp-email" value="<?php echo get_option('jw-pp-email'); ?>" /></td>
+			        </tr>
+			        <tr valign="top">
+			        <th scope="row">Currency Code</th>
+			        <td><input type="text" name="jw-pp-curr" value="<?php echo get_option('jw-pp-curr'); ?>" /><br/>
+			        Default: USD, <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_currency_codes" target="_blank">available codes here</a>.</td>
+			        </tr>
+			        <tr valign="top">
+			        <th scope="row">Language Code</th>
+			        <td><input type="text" name="jw-pp-lc" value="<?php echo get_option('jw-pp-lc'); ?>" /><br/>
+			        Default: US, <a href="https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_api_nvp_country_codes" target="_blank">available codes here</a>.</td>
+			        </tr> 
+			        <tr valign="top">
+			        <th scope="row">Add to Cart Image</th>
+			        <td><input type="text" name="jw-pp-acimg" value="<?php echo get_option('jw-pp-acimg'); ?>" /><br/>
+			        Defaults to standard submit button with CSS class of 'pp-button'. </td>
+			        </tr>
+			        <tr valign="top">
+			        <th scope="row">Check Out Image</th>
+			        <td><input type="text" name="jw-pp-coimg" value="<?php echo get_option('jw-pp-coimg'); ?>" /><br/>
+			        Defaults to standard submit button with CSS class of 'pp-button'.</td>
 			        </tr>
 			    </table>
 			    <p class="submit">
@@ -66,6 +95,15 @@ class JWPaypal
 	function jw_pp_shortcodes($atts) {
 	
 		$email = get_option('jw-pp-email');
+		$cc = ( get_option('jw-pp-curr') ? get_option('jw-pp-curr') : 'USD' ) ;
+		$lc = ( get_option('jw-pp-lc') ? get_option('jw-pp-lc') : 'US' ) ;
+		$acimg = ( get_option('jw-pp-acimg') ? get_option('jw-pp-acimg') : false ) ;
+		$coimg = ( get_option('jw-pp-coimg') ? get_option('jw-pp-coimg') : false ) ;
+		
+		$acbutton = ( $acimg ? '<input type="image" src="'.$acimg.'" class="pp-img-button" value="Add to Cart">' : '<input type="submit" class="pp-button" value="Add to Cart" name="submit" alt="PayPal - The safer, easier way to pay online!">' ) ;
+		
+		$cobutton = ( $coimg ? '<input type="image" src="'.$coimg.'" class="pp-img-button" value="View Cart / Checkout">' : '<input type="submit" class="pp-button" value="View Cart / Checkout" border="0" name="submit" alt="View Cart">' );
+		
 		$shipadd = $atts['shipadd'];
 		if(!is_numeric($shipadd)) $shipadd = '2';
 		switch($atts['type']):
@@ -74,11 +112,11 @@ class JWPaypal
 			<form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" class="pp-form">
 			<input type="hidden" name="cmd" value="_cart">
 			<input type="hidden" name="business" value="'.$email.'">
-			<input type="hidden" name="lc" value="US">
+			<input type="hidden" name="lc" value="'.$lc.'">
 			<input type="hidden" name="item_name" value="'.$atts['productname'].'">
 			<input type="hidden" name="item_number" value="'.$atts['sku'].'">
 			<input type="hidden" name="amount" value="'.$atts['amount'].'">
-			<input type="hidden" name="currency_code" value="USD">
+			<input type="hidden" name="currency_code" value="'.$cc.'">
 			<input type="hidden" name="button_subtype" value="products">
 			<input type="hidden" name="no_note" value="1">
 			<input type="hidden" name="add" value="1">
@@ -96,10 +134,10 @@ class JWPaypal
 			if($atts['extra'] != '') {
 				$code.='<table><tr>';
 				$code.='<td><input type="hidden" name="on0" value="'.$atts['extra'].'">'.$atts['extra'].':</td><td><input type="text" name="os0" maxlength="60"></td>';
-				$code.= '<td><input type="submit" class="pp-button" value="Add to Cart" name="submit" alt="PayPal - The safer, easier way to pay online!"></td></tr>
+				$code.= '<td>'.$acbutton.'</td></tr>
 			</table>';
 			} else {
-			$code.= '<input type="submit" class="pp-button" value="Add to Cart" name="submit" alt="PayPal - The safer, easier way to pay online!">';
+			$code.= $acbutton;
 			}
 			$code.= '</form>';
 			break;
@@ -108,7 +146,7 @@ class JWPaypal
 				<form name="_xclick" target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" class="pp-form">
 				<input type="hidden" name="cmd" value="_cart">
 				<input type="hidden" name="business" value="'.$email.'">
-				<input type="submit" class="pp-button" value="View Cart / Checkout" border="0" name="submit" alt="View Cart">
+				'.$cobutton.'
 				<input type="hidden" name="display" value="1">
 				</form>
 			';
